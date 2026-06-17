@@ -1,4 +1,4 @@
-using AIChatBot.API.Data;
+﻿using AIChatBot.API.Data;
 using Microsoft.EntityFrameworkCore;
 using AIChatBot.API.Services;
 
@@ -42,3 +42,4 @@ app.MapControllers();
 app.Run();
 var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
 app.Run($"http://0.0.0.0:{port}");
+app.MapGet("/", () => "🚀 AI ChatBot API is running");
