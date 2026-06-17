@@ -9,42 +9,42 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// HTTP client
+// Http Client
 builder.Services.AddHttpClient<GroqService>();
 
-// DB
+// Database
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAngular",
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:4200")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        });
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
 });
 
 var app = builder.Build();
 
-// CORS
-app.UseCors("AllowAngular");
-
-// Swagger (safe for now)
+// Swagger
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+
+// CORS MUST be before MapControllers
+app.UseCors("AllowFrontend");
+
 app.UseAuthorization();
 
 app.MapControllers();
 
-// Root test route
 app.MapGet("/", () => "🚀 AI ChatBot API is running");
 
-// ✅ IMPORTANT: Render PORT FIX
 var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
 app.Run($"http://0.0.0.0:{port}");
