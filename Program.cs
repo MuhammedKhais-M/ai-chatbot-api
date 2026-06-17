@@ -1,23 +1,22 @@
 ﻿using AIChatBot.API.Data;
-using Microsoft.EntityFrameworkCore;
 using AIChatBot.API.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.ConfigureKestrel(options =>
-{
-    var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
-    options.ListenAnyIP(int.Parse(port));
-});
-
+// Controllers
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// HTTP client
 builder.Services.AddHttpClient<GroqService>();
 
+// DB
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular",
@@ -31,8 +30,10 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// CORS
 app.UseCors("AllowAngular");
 
+// Swagger (safe for now)
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -41,6 +42,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Root test route
 app.MapGet("/", () => "🚀 AI ChatBot API is running");
 
-app.Run();
+// ✅ IMPORTANT: Render PORT FIX
+var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
+app.Run($"http://0.0.0.0:{port}");

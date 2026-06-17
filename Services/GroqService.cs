@@ -21,54 +21,59 @@ namespace AIChatBot.API.Services
         {
             var apiKey = _configuration["Groq:ApiKey"];
 
-            _httpClient.DefaultRequestHeaders.Clear();
-
-            _httpClient.DefaultRequestHeaders.Add(
-                "Authorization",
-                $"Bearer {apiKey}");
-
-            var requestBody = new
+            if (string.IsNullOrEmpty(apiKey))
             {
-                model = "llama-3.3-70b-versatile",
-                messages = new object[]
-                 {
-                    new
-                    {
-                        role = "system",
-                        content = "You are Khais Bot, an AI assistant created by Muhammed Khais. Always introduce yourself as Khais Bot when asked who you are. Give clear, professional, and concise answers."
-                    },
-                    new
-                    {
-                        role = "user",
-                        content = prompt
-                    }
-                 }
-            };
-
-
-            var json = JsonSerializer.Serialize(requestBody);
-
-            var response = await _httpClient.PostAsync(
-                "https://api.groq.com/openai/v1/chat/completions",
-                new StringContent(
-                    json,
-                    Encoding.UTF8,
-                    "application/json"));
-
-            var result = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return result;
+                return "❌ Groq API key is missing in environment variables.";
             }
 
-            var responseJson = JObject.Parse(result);
+            try
+            {
+                _httpClient.DefaultRequestHeaders.Clear();
+                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
-            var aiResponse =
-                responseJson["choices"]?[0]?["message"]?["content"]?.ToString();
+                var requestBody = new
+                {
+                    model = "llama-3.1-8b-instant",
+                    messages = new object[]
+                    {
+                new
+                {
+                    role = "system",
+                    content = "You are Khais Bot, an AI assistant created by Muhammed Khais."
+                },
+                new
+                {
+                    role = "user",
+                    content = prompt
+                }
+                    }
+                };
 
-            return (aiResponse ?? "No response received.")
-            + "\n\n🤖 Powered by Khais Bot";
+                var json = JsonSerializer.Serialize(requestBody);
+
+                var response = await _httpClient.PostAsync(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    new StringContent(json, Encoding.UTF8, "application/json"));
+
+                var result = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    return $"❌ GROQ ERROR: {response.StatusCode} - {error}";
+                }
+
+                var responseJson = JObject.Parse(result);
+
+                var aiResponse =
+                    responseJson["choices"]?[0]?["message"]?["content"]?.ToString();
+
+                return aiResponse ?? "No response received.";
+            }
+            catch (Exception ex)
+            {
+                return $"❌ Server Error: {ex.Message}";
+            }
         }
     }
 }
