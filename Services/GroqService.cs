@@ -36,11 +36,21 @@ namespace AIChatBot.API.Services
                     model = "llama-3.1-8b-instant",
                     messages = new object[]
                     {
-                new
-                {
-                    role = "system",
-                    content = "You are Khais Bot, an AI assistant created by Muhammed Khais."
-                },
+               new
+  {
+    role = "system",
+    content = @"You are Khais AI, an AI assistant created by Muhammed Khais.
+
+You understand both English and Malayalam.
+
+Rules:
+- If the user writes in Malayalam, reply in Malayalam.
+- If the user writes in English, reply in English.
+- Detect the language automatically.
+- Give accurate, helpful and professional answers.
+- If the user asks current affairs, use the latest information available.
+"
+},
                 new
                 {
                     role = "user",
