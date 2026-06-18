@@ -11,7 +11,7 @@ builder.Services.AddSwaggerGen();
 
 // Http Client
 builder.Services.AddHttpClient<GroqService>();
-
+builder.Services.AddHttpClient<TavilyService>();
 // Database
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(

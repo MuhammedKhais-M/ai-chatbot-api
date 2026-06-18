@@ -14,17 +14,36 @@ namespace AIChatBot.API.Controllers
     public class ChatController : ControllerBase
     {
         private readonly GroqService _groqService;
+        private readonly TavilyService _tavilyService;
         private readonly AppDbContext _context;
-        public ChatController(GroqService groqService, AppDbContext context)
+        public ChatController(GroqService groqService, TavilyService tavilyService, AppDbContext context)
         {
             _groqService = groqService;
+            _tavilyService = tavilyService;
             _context = context;
         }
 
         [HttpPost("send")]
         public async Task<IActionResult> SendMessage(ChatRequest request)
         {
-            var aiResponse = await _groqService.AskAI(request.Message);
+            var searchResult =
+                await _tavilyService.SearchAsync(request.Message);
+
+            var finalPrompt = $@"
+Answer using the latest web information below.
+
+WEB SEARCH RESULT:
+{searchResult}
+
+USER QUESTION:
+{request.Message}
+
+Give a clear and accurate answer.
+";
+
+            var aiResponse =
+                await _groqService.AskAI(finalPrompt);
+
             return Ok(aiResponse);
         }
         //public async Task<IActionResult> SendMessage(ChatRequest request)
